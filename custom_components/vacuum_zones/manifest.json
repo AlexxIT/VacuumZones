@@ -1,0 +1,12 @@
+{
+  "domain": "vacuum_zones",
+  "name": "Vacuum Zones",
+  "documentation": "https://github.com/AlexxIT/VacuumZones",
+  "dependencies": [
+  ],
+  "codeowners": [
+    "@AlexxIT"
+  ],
+  "requirements": [],
+  "version": "1.0.0"
+}
