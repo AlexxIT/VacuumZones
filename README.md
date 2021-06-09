@@ -14,13 +14,15 @@ Current zone will be in `cleaning` state, next zones will be in `paused` state, 
 
 You can pause main vacuum entity, it won't reset the queue. You can stop any of the virtual vacuum cleaners - this will reset the queue, but will not stop cleaning in the current room. You can skip the current room by sending the main vacuum cleaner to the dock, the integration will automatically start the next element of the queue.
 
-## Install
+## Installation
 
-You can install component with [HACS](https://hacs.xyz/) custom repo: `AlexxIT/VacuumZones`.
+**Method 1.** [HACS](https://hacs.xyz/) custom repo:
 
-Or manually copy `vacuum_zones` folder from [latest release](https://github.com/AlexxIT/VacuumZones/releases/latest) to `custom_components` folder in your config folder. 
+> HACS > Integrations > 3 dots (upper top corner) > Custom repositories > URL: `AlexxIT/VacuumZones`, Category: Integration > Add > wait > VacuumZones > Install
 
-## Config
+**Method 2.** Manually copy `vacuum_zones` folder from [latest release](https://github.com/AlexxIT/VacuumZones/releases/latest) to `/config/custom_components` folder.
+
+## Configuration
 
 You can config each room/zone with a [room number](https://www.home-assistant.io/integrations/xiaomi_miio/#service-xiaomi_miiovacuum_clean_segment) or with a [zone coordinates](https://www.home-assistant.io/integrations/xiaomi_miio/#service-xiaomi_miiovacuum_clean_zone).
 
