@@ -2,11 +2,10 @@
   "domain": "vacuum_zones",
   "name": "Vacuum Zones",
   "documentation": "https://github.com/AlexxIT/VacuumZones",
-  "dependencies": [
-  ],
-  "codeowners": [
-    "@AlexxIT"
-  ],
+  "issue_tracker": "https://github.com/AlexxIT/VacuumZones/issues",
+  "codeowners": ["@AlexxIT"],
+  "dependencies": [],
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.0",
+  "iot_class": "local_push"
 }
