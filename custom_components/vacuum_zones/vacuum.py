@@ -53,7 +53,7 @@ class XiaomiVacuum(StateVacuumEntity):
     _attr_state = STATE_IDLE
     _attr_supported_features = SUPPORT_START | SUPPORT_STOP
 
-    script = None
+    script: Script = None
 
     def __init__(self, name: str, config: dict, entity_id: str, queue: list):
         self._attr_name = name
@@ -62,10 +62,8 @@ class XiaomiVacuum(StateVacuumEntity):
         self.queue = queue
 
     async def async_added_to_hass(self):
-        if CONF_SEQUENCE in self.config:
-            self.script = Script(
-                self.hass, self.config[CONF_SEQUENCE], self.name, VACUUM_DOMAIN
-            )
+        if sequence := self.config.get(CONF_SEQUENCE):
+            self.script = Script(self.hass, sequence, self.name, VACUUM_DOMAIN)
 
     async def internal_start(self):
         self._attr_state = STATE_CLEANING
