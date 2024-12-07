@@ -69,7 +69,7 @@ class XiaomiVacuum(StateVacuumEntity):
 
     async def internal_start(self):
         self._attr_state = STATE_CLEANING
-        await self.async_update_ha_state()
+        self.async_write_ha_state()
 
         if self.script:
             await self.script.async_run()
