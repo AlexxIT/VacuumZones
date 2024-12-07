@@ -32,6 +32,6 @@ CONFIG_SCHEMA = vol.Schema(
 
 async def async_setup(hass: HomeAssistant, config: dict):
     hass.async_create_task(
-        async_load_platform("vacuum", DOMAIN, config[DOMAIN], config)
+        async_load_platform(hass, "vacuum", DOMAIN, config[DOMAIN], config)
     )
     return True
