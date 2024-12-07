@@ -2,7 +2,13 @@
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/custom-components/hacs)
 
-[Home Assistant](https://www.home-assistant.io/) custom component that helps control zone cleaning for [Xiaomi Vacuum](https://www.home-assistant.io/integrations/xiaomi_miio/#xiaomi-mi-robot-vacuum) cleaners with the help of voice assistants - Apple Siri, Google Assistant, Yandex Alice.
+[Home Assistant](https://www.home-assistant.io/) custom component that helps control zone cleaning for some vacuum cleaners with the help of voice assistants - Apple Siri, Google Assistant, Yandex Alice.
+
+Supported vacuums:
+
+- [Xiaomi Vacuum](https://www.home-assistant.io/integrations/xiaomi_miio/#xiaomi-mi-robot-vacuum)
+- [Dreame Vacuum](https://github.com/Tasshack/dreame-vacuum)
+- [Roborock Vacuum](https://github.com/humbertogontijo/homeassistant-roborock)
 
 This component creates a virtual vacuum cleaner for each of your zone or room.
 
@@ -38,22 +44,35 @@ You can use multiple rooms/zones in one zone item.
 vacuum_zones:
   entity_id: vacuum.roborock_vacuum_s5e  # change to your vacuum
   zones:
-    Hall:  # room name on your language
-      room: 20  # one or more rooms
+    Hall:                                # room name on your language
+      room: 20                           # one or more rooms
 
-    Under the table:  # zone name on your language
+    Under the table:                     # zone name on your language
       zone: [[23510,25311,25110,26361]]  # one or more zones
-      repeats: 2  # optional, default 1
+      repeats: 2                         # optional, default 1
 
-    Home:  # zone name on your language
-      sequence:  # optional script sequence (run before command to vacuum)
+    Home:                                # zone name on your language
+      sequence:                          # optional script sequence (run before command to vacuum)
       - service: persistent_notification.create
         data:
           message: Starting a complete house cleaning
       room: [15,16,17]
 
-    Trash:  # point name on your language
-      goto: [25500, 25500]  # move to point
+    Trash:                               # point name on your language
+      goto: [25500, 25500]               # move to point
+```
+
+If your vacuum not supported, you can always run raw service call:
+
+```yaml
+vacuum_zones:
+  entity_id: vacuum.dreame_vacuum
+  zones:
+    Main Room:
+      sequence:
+      - service: dreame_vacuum.vacuum_clean_spot
+        data:
+          points: [819,-263]
 ```
 
 ## Useful links
