@@ -2,8 +2,7 @@ from typing import List
 
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
-    SUPPORT_START,
-    SUPPORT_STOP,
+    VacuumEntityFeature,
     DOMAIN as VACUUM_DOMAIN,
     STATE_CLEANING,
     STATE_RETURNING,
@@ -51,7 +50,7 @@ async def async_setup_platform(hass, _, async_add_entities, discovery_info=None)
 
 class XiaomiVacuum(StateVacuumEntity):
     _attr_state = STATE_IDLE
-    _attr_supported_features = SUPPORT_START | SUPPORT_STOP
+    _attr_supported_features = VacuumEntityFeature.START | VacuumEntityFeature.STOP
 
     script: Script = None
 
