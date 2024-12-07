@@ -1,5 +1,3 @@
-from typing import List
-
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
     VacuumEntityFeature,
@@ -16,14 +14,15 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
 )
 from homeassistant.core import Context, Event, State
+from homeassistant.helpers import entity_registry
 from homeassistant.helpers.script import Script
 
 
 async def async_setup_platform(hass, _, async_add_entities, discovery_info=None):
-    entity_id = discovery_info["entity_id"]
-    queue: List[XiaomiVacuum] = []
+    entity_id: str = discovery_info["entity_id"]
+    queue: list[ZoneVacuum] = []
     entities = [
-        XiaomiVacuum(name, config, entity_id, queue)
+        ZoneVacuum(name, config, entity_id, queue)
         for name, config in discovery_info["zones"].items()
     ]
     async_add_entities(entities)
@@ -36,33 +35,65 @@ async def async_setup_platform(hass, _, async_add_entities, discovery_info=None)
         if new_state.state not in (STATE_RETURNING, STATE_DOCKED):
             return
 
-        prev: XiaomiVacuum = queue.pop(0)
+        prev: ZoneVacuum = queue.pop(0)
         await prev.internal_stop()
 
         if not queue:
             return
 
-        next_: XiaomiVacuum = queue[0]
+        next_: ZoneVacuum = queue[0]
         await next_.internal_start(event.context)
 
     hass.bus.async_listen(EVENT_STATE_CHANGED, state_changed_event_listener)
 
 
-class XiaomiVacuum(StateVacuumEntity):
+class ZoneVacuum(StateVacuumEntity):
     _attr_state = STATE_IDLE
     _attr_supported_features = VacuumEntityFeature.START | VacuumEntityFeature.STOP
 
+    domain: str = None
+    service: str = None
     script: Script = None
 
     def __init__(self, name: str, config: dict, entity_id: str, queue: list):
-        self._attr_name = name
-        config["entity_id"] = entity_id
-        self.config = config
+        self._attr_name = config.pop("name", name)
+        self.service_data: dict = config | {ATTR_ENTITY_ID: entity_id}
         self.queue = queue
 
+    @property
+    def vacuum_entity_id(self) -> str:
+        return self.service_data[ATTR_ENTITY_ID]
+
     async def async_added_to_hass(self):
-        if sequence := self.config.get(CONF_SEQUENCE):
+        # init start script
+        if sequence := self.service_data.pop(CONF_SEQUENCE, None):
             self.script = Script(self.hass, sequence, self.name, VACUUM_DOMAIN)
+
+        # get entity domain
+        # https://github.com/home-assistant/core/blob/dev/homeassistant/components/xiaomi_miio/services.yaml
+        # https://github.com/Tasshack/dreame-vacuum/blob/master/custom_components/dreame_vacuum/services.yaml
+        # https://github.com/humbertogontijo/homeassistant-roborock/blob/main/custom_components/roborock/services.yaml
+        entry = entity_registry.async_get(self.hass).async_get(self.vacuum_entity_id)
+        self.domain = entry.platform
+
+        # migrate service field names
+        if room := self.service_data.pop("room", None):
+            self.service_data["segments"] = room
+        if goto := self.service_data.pop("goto", None):
+            self.service_data["x_coord"] = goto[0]
+            self.service_data["y_coord"] = goto[1]
+
+        if "segments" in self.service_data:
+            # "xiaomi_miio", "dreame_vacuum", "roborock"
+            self.service = "vacuum_clean_segment"
+        elif "zone" in self.service_data:
+            # "xiaomi_miio", "dreame_vacuum", "roborock"
+            if self.domain == "xiaomi_miio":
+                self.service_data.setdefault("repeats", 1)
+            self.service = "vacuum_clean_zone"
+        elif "x_coord" in self.service_data and "y_coord" in self.service_data:
+            # "xiaomi_miio", "roborock"
+            self.service = "vacuum_goto"
 
     async def internal_start(self, context: Context) -> None:
         self._attr_state = STATE_CLEANING
@@ -71,39 +102,9 @@ class XiaomiVacuum(StateVacuumEntity):
         if self.script:
             await self.script.async_run(context=context)
 
-        if "room" in self.config:
+        if self.service:
             await self.hass.services.async_call(
-                "xiaomi_miio",
-                "vacuum_clean_segment",
-                {
-                    "entity_id": self.config["entity_id"],
-                    "segments": self.config["room"],
-                },
-                blocking=True,
-            )
-
-        elif "zone" in self.config:
-            await self.hass.services.async_call(
-                "xiaomi_miio",
-                "vacuum_clean_zone",
-                {
-                    "entity_id": self.config["entity_id"],
-                    "zone": self.config["zone"],
-                    "repeats": self.config.get("repeats", 1),
-                },
-                blocking=True,
-            )
-
-        elif "goto" in self.config:
-            await self.hass.services.async_call(
-                "xiaomi_miio",
-                "vacuum_goto",
-                {
-                    "entity_id": self.config["entity_id"],
-                    "x_coord": self.config["goto"][0],
-                    "y_coord": self.config["goto"][1],
-                },
-                blocking=True,
+                self.domain, self.service, self.service_data, True
             )
 
     async def internal_stop(self):
@@ -113,7 +114,7 @@ class XiaomiVacuum(StateVacuumEntity):
     async def async_start(self):
         self.queue.append(self)
 
-        state = self.hass.states.get(self.config["entity_id"])
+        state = self.hass.states.get(self.vacuum_entity_id)
         if len(self.queue) > 1 or state == STATE_CLEANING:
             self._attr_state = STATE_PAUSED
             self.async_write_ha_state()

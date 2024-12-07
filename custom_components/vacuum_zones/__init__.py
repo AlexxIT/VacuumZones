@@ -15,12 +15,14 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Required("zones"): {
                     cv.string: vol.Schema(
                         {
+                            vol.Optional("name"): str,
                             vol.Optional("room"): vol.Any(list, int),
                             vol.Optional("zone"): list,
                             vol.Optional("repeats"): int,
                             vol.Optional("goto"): list,
                             vol.Optional(CONF_SEQUENCE): cv.SCRIPT_SCHEMA,
-                        }
+                        },
+                        extra=vol.ALLOW_EXTRA,
                     )
                 },
             }
