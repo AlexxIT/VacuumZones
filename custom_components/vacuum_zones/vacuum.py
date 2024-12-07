@@ -15,7 +15,7 @@ from homeassistant.const import (
     EVENT_STATE_CHANGED,
     ATTR_ENTITY_ID,
 )
-from homeassistant.core import Event, State
+from homeassistant.core import Context, Event, State
 from homeassistant.helpers.script import Script
 
 
@@ -43,7 +43,7 @@ async def async_setup_platform(hass, _, async_add_entities, discovery_info=None)
             return
 
         next_: XiaomiVacuum = queue[0]
-        await next_.internal_start()
+        await next_.internal_start(event.context)
 
     hass.bus.async_listen(EVENT_STATE_CHANGED, state_changed_event_listener)
 
@@ -64,12 +64,12 @@ class XiaomiVacuum(StateVacuumEntity):
         if sequence := self.config.get(CONF_SEQUENCE):
             self.script = Script(self.hass, sequence, self.name, VACUUM_DOMAIN)
 
-    async def internal_start(self):
+    async def internal_start(self, context: Context) -> None:
         self._attr_state = STATE_CLEANING
         self.async_write_ha_state()
 
         if self.script:
-            await self.script.async_run()
+            await self.script.async_run(context=context)
 
         if "room" in self.config:
             await self.hass.services.async_call(
@@ -119,7 +119,7 @@ class XiaomiVacuum(StateVacuumEntity):
             self.async_write_ha_state()
             return
 
-        await self.internal_start()
+        await self.internal_start(self._context)
 
     async def async_stop(self, **kwargs):
         for vacuum in self.queue:
