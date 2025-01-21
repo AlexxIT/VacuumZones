@@ -1,3 +1,5 @@
+import hashlib
+
 from homeassistant.components.vacuum import (
     StateVacuumEntity,
     VacuumEntityFeature,
@@ -16,6 +18,7 @@ from homeassistant.const import (
 from homeassistant.core import Context, Event, State
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.script import Script
+from homeassistant.util import slugify
 
 
 async def async_setup_platform(hass, _, async_add_entities, discovery_info=None):
@@ -57,6 +60,9 @@ class ZoneVacuum(StateVacuumEntity):
 
     def __init__(self, name: str, config: dict, entity_id: str, queue: list):
         self._attr_name = config.pop("name", name)
+        short_entity_id = entity_id.split(".")[-1]
+        name_hash = hashlib.sha1(name.encode()).hexdigest()
+        self._attr_unique_id = slugify(f"{short_entity_id}_zone_{name}_{name_hash}")
         self.service_data: dict = config | {ATTR_ENTITY_ID: entity_id}
         self.queue = queue
 
