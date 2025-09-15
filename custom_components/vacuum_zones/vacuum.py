@@ -2,9 +2,6 @@ from homeassistant.components.vacuum import (
     StateVacuumEntity,
     VacuumEntityFeature,
     DOMAIN as VACUUM_DOMAIN,
-    STATE_CLEANING,
-    STATE_RETURNING,
-    STATE_DOCKED,
 )
 from homeassistant.const import (
     CONF_SEQUENCE,
@@ -16,6 +13,22 @@ from homeassistant.const import (
 from homeassistant.core import Context, Event, State
 from homeassistant.helpers import entity_registry
 from homeassistant.helpers.script import Script
+
+
+try:
+    # trying to import new constants from VacuumActivity HA Core 2026.1
+    from homeassistant.components.vacuum import VacuumActivity
+
+    STATE_CLEANING = VacuumActivity.CLEANING
+    STATE_RETURNING = VacuumActivity.RETURNING
+    STATE_DOCKED = VacuumActivity.DOCKED
+except ImportError:
+    # if the new constants are unavailable, use the old ones
+    from homeassistant.components.vacuum import (
+        STATE_CLEANING,
+        STATE_RETURNING,
+        STATE_DOCKED,
+    )
 
 
 async def async_setup_platform(hass, _, async_add_entities, discovery_info=None):
