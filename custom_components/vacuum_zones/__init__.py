@@ -5,7 +5,7 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.discovery import async_load_platform
 
 DOMAIN = "vacuum_zones"
-PLATFORMS = ["sensor"]
+PLATFORMS = ["vacuum"]
 
 CONFIG_SCHEMA = vol.Schema(
     {
