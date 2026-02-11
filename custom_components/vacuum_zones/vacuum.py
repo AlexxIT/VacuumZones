@@ -53,6 +53,7 @@ class ZoneVacuum(StateVacuumEntity):
 
     def __init__(self, name: str, config: dict, entity_id: str, queue: list):
         self._attr_name = config.pop("name", name)
+        self._attr_unique_id = config.pop("unique_id", None)
         self.service_data: dict = config | {ATTR_ENTITY_ID: entity_id}
         self.queue = queue
 
