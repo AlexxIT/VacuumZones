@@ -16,6 +16,7 @@ CONFIG_SCHEMA = vol.Schema(
                     cv.string: vol.Schema(
                         {
                             vol.Optional("name"): str,
+                            vol.Optional("unique_id"): str,
                             vol.Optional("room"): vol.Any(list, int),
                             vol.Optional("zone"): list,
                             vol.Optional("repeats"): int,
